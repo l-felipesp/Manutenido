@@ -4,17 +4,20 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import requests
 import os
+import json
 
 # CONFIG
-API_KEY = "AIzaSyB1Ak1llqb2_epOM6JuSMNL7mMzQKnOTyo"
-SERVICE_ACCOUNT_PATH = "serviceAccountKey.json"
-PROJECT_ID = "manutenido-c5c18"
+SERVICE_ACCOUNT_JSON = os.getenv("SERVICE_ACCOUNT_JSON")
+API_KEY = os.getenv("API_KEY")
+PROJECT_ID = os.getenv("PROJECT_ID")
 
-if not os.path.exists(SERVICE_ACCOUNT_PATH):
-    raise RuntimeError("Coloque serviceAccountKey.json na pasta api/ antes de rodar a API")
+if not SERVICE_ACCOUNT_JSON:
+    raise RuntimeError("SERVICE_ACCOUNT_JSON não configurado")
 
-cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
-firebase_admin.initialize_app(cred)
+cred_dict = json.loads(SERVICE_ACCOUNT_JSON)
+cred = credentials.Certificate(cred_dict)
+
+firebase_admin.initialize_app(cred, {"projectId": PROJECT_ID})
 db = firestore.client()
 
 app = FastAPI(title="Manutenido API")
