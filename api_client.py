@@ -1,9 +1,7 @@
-# api_client.py
 import requests
 import os
 
-# API do servidor (mude para IP do seu PC quando testar no celular)
-API_BASE_URL = os.environ.get("MANUTENIDO_API_URL", "http://192.168.1.115:8000")
+API_BASE_URL = "https://manutenido-api.onrender.com"
 
 def _post(path: str, json_payload: dict):
     url = f"{API_BASE_URL}{path}"
@@ -20,7 +18,6 @@ def _get(path: str):
     try:
         r = requests.get(url, timeout=15)
         r.raise_for_status()
-        # Alguns endpoints retornam {} vazio quando não acham; mantemos isso
         return r.json()
     except Exception as e:
         print(f"[api_client] GET {url} erro:", e)
