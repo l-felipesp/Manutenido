@@ -34,4 +34,4 @@ def main(page: ft.Page):
     page.go("/login")
 
 if __name__ == "__main__":
-    ft.app(target=main)   # usa o padrão do Flet
+    ft.app(target=main)

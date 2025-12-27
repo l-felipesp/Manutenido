@@ -98,9 +98,7 @@ def DashboardView(page: ft.Page):
 
         page.update()
 
-    # -------------------------------
     # Ações
-    # -------------------------------
     def abrir_cadastro(e):
         open_vehicle_modal(
             page,
@@ -114,9 +112,7 @@ def DashboardView(page: ft.Page):
     # dispara carregamento inicial
     page.run_task(carregar_dados)
 
-    # -------------------------------
     # UI
-    # -------------------------------
     return ft.Container(
         padding=20,
         expand=True,

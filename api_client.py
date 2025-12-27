@@ -1,5 +1,4 @@
 import requests
-import os
 
 API_BASE_URL = "https://manutenido-api.onrender.com"
 

@@ -66,7 +66,7 @@ def open_vehicle_modal(page: ft.Page, on_success_callback=None):
             page.update()
             return
 
-        page.run_task(salvar_async)  # ✅ padrão correto
+        page.run_task(salvar_async)
 
     btn_cancel.on_click = fechar
     btn_save.on_click = on_save_click
