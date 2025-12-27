@@ -8,7 +8,6 @@ def LoginView(page: ft.Page):
     txt_password = ft.TextField(label="Senha", password=True, can_reveal_password=True, width=300)
     status = ft.Text("", color="red")
 
-    # ✅ ASYNC SEM PARÂMETROS
     async def executar_login():
         try:
             res = await asyncio.to_thread(
@@ -44,12 +43,12 @@ def LoginView(page: ft.Page):
     def on_login_click(e):
         status.value = "Entrando..."
         page.update()
-        page.run_task(executar_login)  # ✅ CORRETO
+        page.run_task(executar_login)
 
     def on_register_click(e):
         status.value = "Criando conta..."
         page.update()
-        page.run_task(executar_cadastro)  # ✅ CORRETO
+        page.run_task(executar_cadastro)
 
     return ft.Container(
         expand=True,

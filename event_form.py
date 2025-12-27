@@ -1,4 +1,3 @@
-# event_form.py
 import flet as ft
 import asyncio
 from api_client import add_event

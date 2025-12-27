@@ -1,4 +1,3 @@
-# workshop_search.py
 import flet as ft
 import asyncio
 from api_client import find_vehicle_by_plate

@@ -1,4 +1,3 @@
-# vehicle_details.py
 import flet as ft
 import asyncio
 from api_client import list_events

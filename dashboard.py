@@ -1,4 +1,3 @@
-# dashboard.py
 import flet as ft
 import asyncio
 from api_client import list_vehicles
@@ -19,9 +18,7 @@ def DashboardView(page: ft.Page):
         page.session.set("selected_vehicle_data", vehicle_data)
         page.go("/vehicle_details")
 
-    # -------------------------------
     # Carregar veículos (API)
-    # -------------------------------
     async def carregar_dados():
         lista_veiculos.controls.clear()
         lista_veiculos.controls.append(
@@ -150,7 +147,7 @@ def DashboardView(page: ft.Page):
 
                 ft.Divider(color="transparent"),
 
-                # 🔧 Área da oficina (BUSCA POR PLACA)
+                # Oficina (BUSCA POR PLACA)
                 ft.Container(
                     bgcolor=COLOR_CARD_ALT,
                     padding=15,

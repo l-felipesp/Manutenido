@@ -1,4 +1,3 @@
-# vehicle_form.py
 import flet as ft
 import asyncio
 from api_client import add_vehicle
@@ -29,7 +28,6 @@ def open_vehicle_modal(page: ft.Page, on_success_callback=None):
             pass
         page.update()
 
-    # ✅ ASYNC SEM PARÂMETROS
     async def salvar_async():
         btn_save.disabled = True
         btn_save.text = "Salvando..."

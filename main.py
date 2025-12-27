@@ -1,4 +1,3 @@
-# main.py (cliente)
 import sys
 import os
 import flet as ft
@@ -10,7 +9,6 @@ def main(page: ft.Page):
     page.title = "Manutenido"
     page.theme_mode = ft.ThemeMode.DARK
 
-    # Route handling (imports dentro)
     def route_change(route):
         page.views.clear()
         from home import HomeView

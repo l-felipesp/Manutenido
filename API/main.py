@@ -19,17 +19,15 @@ db = firestore.client()
 
 app = FastAPI(title="Manutenido API")
 
-# permissões CORS (permite chamadas do app mobile / desktop na mesma rede)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # para desenvolvimento; em produção restrinja os domínios
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# ---- Auth via REST (server usa API_KEY) ----
 IDENTITY_SIGNIN = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
 IDENTITY_SIGNUP = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={API_KEY}"
 
@@ -44,7 +42,7 @@ def login(payload: dict):
     r = requests.post(IDENTITY_SIGNIN, json={"email": email, "password": password, "returnSecureToken": True}, timeout=15)
     if r.status_code != 200:
         raise HTTPException(status_code=401, detail=r.json())
-    return r.json()  # contains idToken, localId, refreshToken, expiresIn
+    return r.json()
 
 
 @app.post("/auth/register")
@@ -60,7 +58,6 @@ def register(payload: dict):
     return r.json()
 
 
-# ---- Vehicles ----
 @app.get("/vehicles/{user_id}")
 def get_vehicles(user_id: str):
     try:
@@ -97,7 +94,6 @@ def get_vehicle_by_plate(plate: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---- Events ----
 @app.get("/events/{vehicle_id}")
 def get_events(vehicle_id: str):
     try:
