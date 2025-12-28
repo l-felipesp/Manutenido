@@ -7,7 +7,7 @@ share/
 pyvenv.cfg
 
 # Firebase / segredos
-serviceAccountKey.json
+app_flet/serviceAccountKey.json
 API/serviceAccountKey.json
 
 # Python cache
