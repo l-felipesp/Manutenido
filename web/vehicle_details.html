@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#10b981" />
+  <meta charset="utf-8" />
+  <title>Manutenido • Detalhes do Veículo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#fff;margin:0;padding:20px}
+    .wrap{max-width:720px;margin:20px auto}
+    .header{background:#1e293b;padding:16px;border-radius:10px}
+    .header h2{margin:0}
+    .sub{color:#94a3b8;margin-top:6px}
+    .card{background:#1e293b;padding:12px;border-radius:8px;margin-top:14px}
+    .event{padding:12px;border-bottom:1px solid #334155}
+    .event:last-child{border-bottom:none}
+    .label{color:#94a3b8;font-size:13px}
+    .fab{position:fixed;right:22px;bottom:22px;width:56px;height:56px;border-radius:50%;background:#10b981;border:none;color:#000;font-size:28px;cursor:pointer}
+    .back{background:none;border:none;color:#94a3b8;margin-bottom:12px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <button class="back" onclick="voltar()">← Voltar</button>
+
+    <div class="header">
+      <h2 id="modelo">—</h2>
+      <div class="sub" id="placa">—</div>
+    </div>
+
+    <div class="card">
+      <h3>Histórico de Eventos</h3>
+      <div id="listaEventos"><p class="sub">Carregando...</p></div>
+    </div>
+  </div>
+
+  <button class="fab" title="Novo evento" onclick="abrirFormulario()">+</button>
+
+<script>
+const API_BASE = "https://manutenido-api.onrender.com";
+
+function requireLogin() {
+  const uid = localStorage.getItem("user_id");
+  const token = localStorage.getItem("id_token");
+  if(!uid || !token){
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
+
+if(!requireLogin()){
+  // redirect happened
+}
+
+const vehicleId = localStorage.getItem("selected_vehicle_id");
+const vehicleData = JSON.parse(localStorage.getItem("selected_vehicle_data") || "null");
+
+if(!vehicleId || !vehicleData){
+  console.warn("vehicleId ou vehicleData ausente, voltando ao dashboard");
+  window.location.href = "dashboard.html";
+}
+
+document.getElementById("modelo").innerText = vehicleData?.modelo || "—";
+document.getElementById("placa").innerText = vehicleData?.placa || "—";
+
+async function carregarEventos(){
+  const el = document.getElementById("listaEventos");
+  el.innerHTML = "<p class='sub'>Carregando...</p>";
+
+  try{
+    const res = await fetch(`${API_BASE}/events/${vehicleId}`);
+    if(!res.ok){ throw new Error("HTTP " + res.status); }
+    const eventos = await res.json();
+
+    if(!eventos || eventos.length === 0){
+      el.innerHTML = "<p class='sub'>Nenhum evento registrado.</p>";
+      return;
+    }
+
+    el.innerHTML = "";
+    eventos.forEach(ev=>{
+      const d = document.createElement("div");
+      d.className = "event";
+      d.innerHTML = `
+        <strong>${ev.tipo || "Evento"}</strong>
+        <div style="margin-top:6px">${ev.descricao || ""}</div>
+        <div style="margin-top:8px" class="label">
+          ${ev.km ? `Quilometragem: ${ev.km} km` : ""}
+          ${ev.registrado_por ? `<br/>Registrado por: ${ev.registrado_por}` : ""}
+        </div>
+      `;
+      el.appendChild(d);
+    });
+
+  } catch(err){
+    console.error(err);
+    el.innerHTML = "<p class='sub'>Erro ao carregar histórico.</p>";
+  }
+}
+
+function abrirFormulario(){ window.location.href = "event_form.html"; }
+function voltar(){ window.location.href = "dashboard.html"; }
+
+carregarEventos();
+</script>
+</body>
+</html>

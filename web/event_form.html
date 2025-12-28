@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#10b981" />
+  <meta charset="utf-8" />
+  <title>Manutenido – Novo Evento</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#fff;margin:0;padding:20px}
+    .box{max-width:520px;margin:40px auto;background:#1e293b;padding:18px;border-radius:10px}
+    label{color:#94a3b8;display:block;margin-top:12px}
+    input,select,textarea,button{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:none;box-sizing:border-box}
+    textarea{min-height:80px;resize:vertical}
+    button{background:#10b981;border:none;color:#000;font-weight:bold;cursor:pointer;margin-top:16px;border-radius:8px}
+    .msg{margin-top:12px}
+    .error{color:#f87171}
+    .success{color:#34d399}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Novo Evento</h2>
+
+    <label for="tipo">Tipo</label>
+    <select id="tipo">
+      <option value="Manutenção">Manutenção</option>
+      <option value="Abastecimento">Abastecimento</option>
+      <option value="Ocorrência">Ocorrência</option>
+    </select>
+
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" placeholder="Descreva o serviço realizado"></textarea>
+
+    <label for="km">Quilometragem (opcional)</label>
+    <input id="km" type="number" placeholder="Ex: 123456" />
+
+    <div id="mensagem" class="msg"></div>
+
+    <button onclick="salvarEvento()">Salvar Evento</button>
+  </div>
+
+<script>
+const API_BASE = "https://manutenido-api.onrender.com";
+
+function requireLogin() {
+  const uid = localStorage.getItem("user_id");
+  const token = localStorage.getItem("id_token");
+  if(!uid || !token){
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
+
+function obterVehicleId(){ return localStorage.getItem("selected_vehicle_id"); }
+function obterUserId(){ return localStorage.getItem("user_id"); }
+function obterUserEmail(){ return localStorage.getItem("user_email"); }
+
+function setMsg(text, type="error"){
+  const el = document.getElementById("mensagem");
+  el.textContent = text || "";
+  el.className = "msg " + (type==="error" ? "error" : "success");
+}
+
+// exige login
+if(!requireLogin()) { /* redirect done */ }
+
+async function salvarEvento(){
+  setMsg("");
+  const vehicleId = obterVehicleId();
+  const userId = obterUserId();
+  const userEmail = obterUserEmail();
+
+  if(!vehicleId){
+    setMsg("Erro interno: veículo não identificado. Volte e tente novamente.", "error");
+    return;
+  }
+
+  if(!userId || !userEmail){
+    // não permite criar evento sem usuário autenticado
+    setMsg("Você precisa estar logado para registrar um evento.", "error");
+    setTimeout(()=> { window.location.href = "login.html"; }, 800);
+    return;
+  }
+
+  const tipo = document.getElementById("tipo").value;
+  const descricao = document.getElementById("descricao").value.trim();
+  const kmVal = document.getElementById("km").value;
+
+  if(!descricao){
+    setMsg("Descrição é obrigatória.", "error");
+    return;
+  }
+
+  const payload = {
+    vehicle_id: vehicleId,
+    user_id: userId,
+    registrado_por: userEmail,
+    tipo,
+    descricao,
+    km: kmVal ? parseInt(kmVal) : null
+  };
+
+  try{
+    const res = await fetch(`${API_BASE}/events`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok){
+      const d = await res.json().catch(()=>({}));
+      console.error("Erro salvar evento:", d);
+      setMsg("Erro ao salvar evento.", "error");
+      return;
+    }
+
+    setMsg("Evento cadastrado com sucesso.", "success");
+
+    // volta para a tela anterior quando possível
+    setTimeout(()=>{
+      if(document.referrer) window.history.back();
+      else window.location.href = "vehicle_details.html";
+    }, 600);
+
+  } catch(err){
+    console.error(err);
+    setMsg("Erro de conexão com a API.", "error");
+  }
+}
+</script>
+</body>
+</html>

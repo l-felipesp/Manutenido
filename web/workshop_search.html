@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#10b981" />
+  <meta charset="utf-8" />
+  <title>Manutenido – Consulta por Placa</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#fff;margin:0;padding:20px}
+    h1{margin:0 0 14px}
+    .search{display:flex;gap:8px;align-items:center}
+    input{padding:10px;border-radius:6px;border:none;width:220px}
+    button{padding:10px;border-radius:6px;border:none;background:#10b981;color:#000;cursor:pointer;font-weight:700}
+    .card{background:#1e293b;padding:14px;border-radius:8px;margin-top:18px}
+    .label{color:#94a3b8;font-size:13px}
+    .event{border-bottom:1px solid #334155;padding:10px 0}
+    .msg{color:#f87171;margin-top:12px}
+    .btn-evento{margin-top:12px;width:100%;padding:10px;border-radius:6px;border:none;background:#06b6d4;color:#000;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+  <h1>Consulta de Veículo por Placa</h1>
+
+  <div class="search">
+    <input id="placa" placeholder="Digite a placa (ex: ABC-1234)" />
+    <button onclick="buscarVeiculo()">Buscar</button>
+  </div>
+
+  <div id="mensagem" class="msg"></div>
+  <div id="resultado"></div>
+
+<script>
+const API_BASE = "https://manutenido-api.onrender.com";
+
+function requireLogin() {
+  const uid = localStorage.getItem("user_id");
+  const token = localStorage.getItem("id_token");
+  if(!uid || !token){
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
+
+async function buscarVeiculo(){
+  if(!requireLogin()) return;
+
+  document.getElementById("mensagem").textContent = "";
+  const placa = document.getElementById("placa").value.trim().toUpperCase();
+  const resultado = document.getElementById("resultado");
+  resultado.innerHTML = "";
+
+  if(!placa){ document.getElementById("mensagem").textContent = "Informe uma placa."; return; }
+
+  try{
+    const vRes = await fetch(`${API_BASE}/vehicles/plate/${placa}`);
+    if(!vRes.ok){ throw new Error("HTTP " + vRes.status); }
+    const veiculo = await vRes.json();
+
+    if(!veiculo.id){ document.getElementById("mensagem").textContent = "Veículo não encontrado."; return; }
+
+    // salva para event_form
+    localStorage.setItem("selected_vehicle_id", veiculo.id);
+    localStorage.setItem("selected_vehicle_data", JSON.stringify(veiculo));
+
+    resultado.innerHTML = `
+      <div class="card">
+        <h2>${veiculo.modelo || "Modelo não informado"}</h2>
+        <div class="label">Placa: ${veiculo.placa}</div>
+        <div class="label">Tipo: ${veiculo.tipo || "-"}</div>
+
+        <button class="btn-evento" onclick="irParaRegistrarEvento()">Registrar evento (Oficina)</button>
+      </div>
+      <div class="card">
+        <h3>Histórico de Eventos</h3>
+        <div id="eventos">Carregando...</div>
+      </div>
+    `;
+
+    // carrega eventos
+    const eRes = await fetch(`${API_BASE}/events/${veiculo.id}`);
+    if(!eRes.ok){ throw new Error("HTTP " + eRes.status); }
+    const eventos = await eRes.json();
+    const eventosDiv = document.getElementById("eventos");
+
+    if(!eventos || eventos.length === 0){
+      eventosDiv.innerHTML = "<p class='label'>Nenhum evento registrado.</p>";
+    } else {
+      eventosDiv.innerHTML = eventos.map(ev => `
+        <div class="event">
+          <div><strong>${ev.tipo || "Evento"}</strong></div>
+          <div style="margin-top:6px">${ev.descricao || ""}</div>
+          <div class="label" style="margin-top:8px">
+            ${ev.km ? `Quilometragem: ${ev.km} km` : ""}
+            ${ev.registrado_por ? `<br/>Registrado por: ${ev.registrado_por}` : ""}
+          </div>
+        </div>
+      `).join("");
+    }
+
+  } catch(err){
+    console.error(err);
+    document.getElementById("mensagem").textContent = "Erro ao consultar a API.";
+  }
+}
+
+function irParaRegistrarEvento(){
+  const vid = localStorage.getItem("selected_vehicle_id");
+  if(!vid){
+    alert("Veículo não identificado.");
+    return;
+  }
+  // exige login no destino também; event_form fará a checagem
+  window.location.href = "event_form.html";
+}
+</script>
+</body>
+</html>

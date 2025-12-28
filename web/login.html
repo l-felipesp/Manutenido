@@ -1,10 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#10b981" />
+  <meta charset="utf-8" />
+  <title>Manutenido • Login</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#fff;margin:0;padding:20px}
+    .box{max-width:420px;margin:40px auto;padding:20px;background:#1e293b;border-radius:10px}
+    label{color:#94a3b8;display:block;margin-top:12px}
+    input{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:none;font-size:16px;box-sizing:border-box}
+    .row{display:flex;gap:8px;margin-top:16px}
+    button{flex:1;padding:12px;border-radius:8px;border:none;font-weight:700;cursor:pointer}
+    .btn-login{background:#10b981;color:#000}
+    .btn-register{background:#334155;color:#fff}
+    .msg{margin-top:12px;color:#f87171}
+  </style>
 </head>
 <body>
+  <div class="box">
+    <h2>Entrar</h2>
+    <label for="email">E-mail</label>
+    <input id="email" type="email" placeholder="seu@exemplo.com" />
 
+    <label for="password">Senha</label>
+    <input id="password" type="password" placeholder="••••••••" />
+
+    <div class="row">
+      <button class="btn-login" onclick="onLogin()">Entrar</button>
+      <button class="btn-register" onclick="onRegister()">Criar conta</button>
+    </div>
+
+    <div id="msg" class="msg"></div>
+  </div>
+
+<script>
+const API_BASE = "https://manutenido-api.onrender.com";
+
+function setError(text){
+  document.getElementById("msg").textContent = text || "";
+}
+
+async function onLogin(){
+  setError("");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){ setError("E-mail e senha são obrigatórios."); return; }
+
+  try{
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({email, password})
+    });
+
+    const data = await res.json();
+    if(!res.ok){ console.error(data); setError("E-mail ou senha inválidos."); return; }
+
+    // salva credenciais + email
+    localStorage.setItem("user_id", data.localId);
+    localStorage.setItem("id_token", data.idToken);
+    localStorage.setItem("user_email", data.email || email);
+
+    // navega para dashboard
+    window.location.href = "dashboard.html";
+
+  } catch(err){
+    console.error(err);
+    setError("Erro de rede. Verifique sua conexão.");
+  }
+}
+
+async function onRegister(){
+  setError("");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){ setError("E-mail e senha são obrigatórios."); return; }
+
+  try{
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({email, password})
+    });
+
+    const data = await res.json();
+    if(!res.ok){ console.error(data); setError("Erro ao criar conta."); return; }
+
+    localStorage.setItem("user_id", data.localId);
+    localStorage.setItem("id_token", data.idToken);
+    localStorage.setItem("user_email", data.email || email);
+
+    window.location.href = "dashboard.html";
+
+  } catch(err){
+    console.error(err);
+    setError("Erro de rede. Verifique sua conexão.");
+  }
+}
+</script>
 </body>
 </html>
