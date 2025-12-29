@@ -144,7 +144,6 @@
 <script>
 const API_BASE = "https://manutenido-api.onrender.com";
 
-/* ---------- AUTENTICAÇÃO ---------- */
 
 function requireLogin() {
   const uid = localStorage.getItem("user_id");
@@ -161,7 +160,6 @@ function logout() {
   window.location.href = "login.html";
 }
 
-/* ---------- NAVEGAÇÃO ---------- */
 
 function irAdicionarVeiculo() {
   window.location.href = "vehicle_form.html";
@@ -176,8 +174,6 @@ function abrirDetalhes(id, data) {
   localStorage.setItem("selected_vehicle_data", JSON.stringify(data));
   window.location.href = "vehicle_details.html";
 }
-
-/* ---------- CARREGAMENTO ---------- */
 
 async function carregarVeiculos() {
   if (!requireLogin()) return;

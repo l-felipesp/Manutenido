@@ -119,7 +119,6 @@ async function salvarEvento(){
 
     setMsg("Evento cadastrado com sucesso.", "success");
 
-    // volta para a tela anterior quando possível
     setTimeout(()=>{
       if(document.referrer) window.history.back();
       else window.location.href = "vehicle_details.html";
