@@ -1,113 +1,211 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icons/icon-192.png" />
-  <meta name="theme-color" content="#10b981" />
   <meta charset="utf-8" />
   <title>Manutenido • Dashboard</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#10b981" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+
   <style>
-    body{font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#fff;margin:0;padding:20px}
-    .wrap{max-width:960px;margin:0 auto}
-    header{display:flex;justify-content:space-between;align-items:center}
-    h1{margin:0}
-    .btn{background:#10b981;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;color:#000;font-weight:700}
-    .card{background:#1e293b;padding:12px;border-radius:8px;margin-top:14px}
-    .list{margin-top:12px}
-    .item{padding:10px;border-bottom:1px solid #334155}
-    .link{color:#06b6d4;cursor:pointer}
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0f172a;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 6px 0;
+    }
+
+    .label {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .actions button {
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-primary {
+      background: #10b981;
+      color: #000;
+    }
+
+    .btn-secondary {
+      background: #22c55e;
+      color: #000;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 20px;
+    }
+
+    .item {
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+
+    .link {
+      color: #38bdf8;
+      cursor: pointer;
+      font-size: 14px;
+    }
   </style>
 </head>
+
 <body>
 <div class="wrap">
+
   <header>
-    <div>
-      <h1>Meus Veículos</h1>
-      <div class="label">Usuário: <span id="userEmail">—</span></div>
-    </div>
-    <div>
-      <button class="btn" onclick="irParaBusca()">Consulta por placa (Oficina)</button>
-      <button class="btn" onclick="logout()" style="margin-left:8px;background:#ef4444;color:white">Sair</button>
+    <h1>Meus Veículos</h1>
+    <div class="label">Usuário: <span id="userEmail">—</span></div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="irAdicionarVeiculo()">
+        + Adicionar veículo
+      </button>
+
+      <button class="btn-secondary" onclick="irParaBusca()">
+        Consulta por placa (Oficina)
+      </button>
+
+      <button class="btn-danger" onclick="logout()">
+        Sair
+      </button>
     </div>
   </header>
 
-  <div id="conteudo" class="card">
-    <div id="mensagem">Carregando...</div>
-    <div id="lista" class="list"></div>
+  <div class="card">
+    <div id="mensagem">Carregando veículos...</div>
+    <div id="lista"></div>
   </div>
+
 </div>
 
 <script>
 const API_BASE = "https://manutenido-api.onrender.com";
 
+/* ---------- AUTENTICAÇÃO ---------- */
+
 function requireLogin() {
   const uid = localStorage.getItem("user_id");
   const token = localStorage.getItem("id_token");
-  if(!uid || !token) {
-    // redireciona para login
+  if (!uid || !token) {
     window.location.href = "login.html";
     return false;
   }
   return true;
 }
 
-function logout(){
-  localStorage.removeItem("user_id");
-  localStorage.removeItem("id_token");
-  localStorage.removeItem("user_email");
-  // limpa selected_vehicle também
-  localStorage.removeItem("selected_vehicle_id");
-  localStorage.removeItem("selected_vehicle_data");
+function logout() {
+  localStorage.clear();
   window.location.href = "login.html";
 }
 
-function irParaBusca(){
+/* ---------- NAVEGAÇÃO ---------- */
+
+function irAdicionarVeiculo() {
+  window.location.href = "vehicle_form.html";
+}
+
+function irParaBusca() {
   window.location.href = "workshop_search.html";
 }
 
-async function carregarVeiculos(){
-  if(!requireLogin()) return;
+function abrirDetalhes(id, data) {
+  localStorage.setItem("selected_vehicle_id", id);
+  localStorage.setItem("selected_vehicle_data", JSON.stringify(data));
+  window.location.href = "vehicle_details.html";
+}
+
+/* ---------- CARREGAMENTO ---------- */
+
+async function carregarVeiculos() {
+  if (!requireLogin()) return;
+
   const userId = localStorage.getItem("user_id");
-  document.getElementById("userEmail").innerText = localStorage.getItem("user_email") || "—";
+  const email = localStorage.getItem("user_email") || "—";
+  document.getElementById("userEmail").innerText = email;
+
   const msg = document.getElementById("mensagem");
   const lista = document.getElementById("lista");
+
   msg.textContent = "Carregando veículos...";
   lista.innerHTML = "";
 
-  try{
+  try {
     const res = await fetch(`${API_BASE}/vehicles/${userId}`);
-    if(!res.ok){ throw new Error("HTTP " + res.status); }
+    if (!res.ok) throw new Error("Erro HTTP");
+
     const veiculos = await res.json();
 
-    msg.textContent = "";
-    if(!veiculos || veiculos.length === 0) {
-      msg.textContent = "Nenhum veículo cadastrado. Use a funcionalidade de adicionar.";
+    if (!veiculos || veiculos.length === 0) {
+      msg.textContent = "Nenhum veículo cadastrado.";
       return;
     }
 
-    veiculos.forEach(v=>{
+    msg.textContent = "";
+
+    veiculos.forEach(v => {
       const div = document.createElement("div");
       div.className = "item";
-      div.innerHTML = `<strong>${v.modelo || "—"}</strong> — <span class="label">Placa: ${v.placa || "—"}</span>
-        <div style="margin-top:6px"><a class="link" onclick='abrirDetalhes("${v.id}", ${JSON.stringify(v).replaceAll("'", "\\'")})'>Ver detalhes</a></div>`;
+      div.innerHTML = `
+        <strong>${v.modelo || "Modelo não informado"}</strong><br>
+        <span class="label">Placa: ${v.placa || "-"}</span><br>
+        <span class="link" onclick='abrirDetalhes("${v.id}", ${JSON.stringify(v)})'>
+          Ver detalhes
+        </span>
+      `;
       lista.appendChild(div);
     });
 
-  } catch(err){
+  } catch (err) {
     console.error(err);
     msg.textContent = "Erro ao carregar veículos.";
   }
 }
 
-function abrirDetalhes(id, data){
-  // salva e redireciona
-  localStorage.setItem("selected_vehicle_id", id);
-  try{ localStorage.setItem("selected_vehicle_data", JSON.stringify(data)); }catch(e){}
-  window.location.href = "vehicle_details.html";
-}
-
 carregarVeiculos();
 </script>
+
 </body>
 </html>
