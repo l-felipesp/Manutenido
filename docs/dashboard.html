@@ -89,6 +89,26 @@
       cursor: pointer;
       font-size: 14px;
     }
+
+    .no-select {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    .link-btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: #0ea5e9;
+      color: #000;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
   </style>
 </head>
 
@@ -191,9 +211,11 @@ async function carregarVeiculos() {
       div.innerHTML = `
         <strong>${v.modelo || "Modelo não informado"}</strong><br>
         <span class="label">Placa: ${v.placa || "-"}</span><br>
-        <span class="link" onclick='abrirDetalhes("${v.id}", ${JSON.stringify(v)})'>
-          Ver detalhes
-        </span>
+        <div class="link-btn no-select"
+            onclick='abrirDetalhes("${v.id}", ${JSON.stringify(v)})'>
+        Ver detalhes
+        </div>
+
       `;
       lista.appendChild(div);
     });
